@@ -29,7 +29,7 @@ class AmongUsMessengerApp(App):
         self.selected_phone = None  # Изначально телефон не выбран
         self.selected_sound = "Сирена"
         
-        self.sound_files = {"Сирена": "sirena.wav", "Звонок": "zvonok.wav", "Гудок": "gudok.wav"}
+        self.sound_files = {"Сирена": "sirena.mp3", "Звонок": "zvonok.mp3", "Гудок": "gudok.mp3"}
         
         # Списки для хранения кнопок (чтобы менять им цвета при активации)
         self.phone_buttons = {}
