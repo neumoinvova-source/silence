@@ -1,22 +1,25 @@
-[app]
+name: Build
+on: [push, pull_request]
 
-title = SILENCE
-package.name = silence
-package.domain = org.silence
+jobs:
+  # Build job. Builds app for Android with Buildozer
+  build-android:
+    name: Build for Android
+    runs-on: ubuntu-latest
 
-source.dir = .
-source.include_exts = py,png,jpg,kv,atlas,wav,mp3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-version = 0.1
+      - name: Build with Buildozer
+        uses: ArtemSBulgakov/buildozer-action@v1
+        id: buildozer
+        with:
+          workdir: test_app
+          buildozer_version: stable
 
-requirements = python3,kivy,requests
-
-orientation = portrait
-fullscreen = 0
-
-android.arch = arm64-v8a,armeabi-v7a
-android.api = 35
-android.minapi = 21
-android.accept_sdk_license = True
-p4a.branch = master
-android.allow_backup = True
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: package
+          path: ${{ steps.buildozer.outputs.filename }}
