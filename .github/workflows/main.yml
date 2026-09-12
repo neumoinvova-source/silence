@@ -37,6 +37,11 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install buildozer cython==0.29.36 virtualenv
 
+      - name: Clean old Buildozer files
+        run: |
+          rm -rf .buildozer
+          rm -rf bin
+
       - name: Build APK
         env:
           BUILDOZER_ALLOW_ROOT: '1'
@@ -46,5 +51,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: owl-apk
+          name: silence-apk
           path: bin/*.apk
