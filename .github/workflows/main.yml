@@ -21,7 +21,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
 
       - name: Install system dependencies
         run: |
@@ -34,7 +34,11 @@ jobs:
             zip \
             openjdk-17-jdk \
             libstdc++6 \
-            aidl
+            aidl \
+            libgtk-3-0 \
+            autoconf \
+            libtool \
+            pkg-config
 
           python -m pip install --upgrade pip
           python -m pip install buildozer cython==0.29.36 virtualenv
@@ -42,21 +46,33 @@ jobs:
       - name: Build APK
         env:
           BUILDOZER_ALLOW_ROOT: '1'
+          ANDROID_AUTO_ACCEPT_SDK_LICENSES: '1'
         run: |
-          # Принудительно соглашаемся со всеми лицензиями Android SDK перед сборкой
+          # 1. Принудительное пре-согласие со всеми текущими и будущими лицензиями Google
           mkdir -p ~/.android && touch ~/.android/repositories.cfg
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
-          yes | $ANDROID_HOME/tools/bin/sdkmanager --licenses || true
           
-          # Создаем пути для Android SDK заранее и подкидываем системный aidl, чтобы Buildozer его точно нашел
+          # Одобряем стандартные лицензии через утилиту sdkmanager
+          if [ -d "$ANDROID_HOME/cmdline-tools/latest/bin" ]; then
+            yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          elif [ -d "$ANDROID_HOME/tools/bin" ]; then
+            yes | $ANDROID_HOME/tools/bin/sdkmanager --licenses || true
+          fi
+          
+          # 2. Модифицируем локальный buildozer.spec (если строка закомментирована — включаем её)
+          if [ -f buildozer.spec ]; then
+            sed -i 's/# android.accept_sdk_license = False/android.accept_sdk_license = True/g' buildozer.spec
+            sed -i 's/android.accept_sdk_license = False/android.accept_sdk_license = True/g' buildozer.spec
+          fi
+          
+          # 3. Решаем проблему с поиском компилятора aidl внутри путей сборщика
           mkdir -p ~/.buildozer/android/platform/android-sdk/build-tools/34.0.0
           ln -sf /usr/bin/aidl ~/.buildozer/android/platform/android-sdk/build-tools/34.0.0/aidl
           
-          # Запуск сборки Buildozer
+          # 4. Запускаем чистую сборку
           buildozer android debug
 
       - name: Upload APK
-        uses: actions/upload-artifact@v4
+        uses: actions/uses: actions/upload-artifact@v4
         with:
           name: silence-apk
           path: bin/*.apk
