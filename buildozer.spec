@@ -1,3 +1,4 @@
+[app]
 name: Build
 on: [push, pull_request]
 
