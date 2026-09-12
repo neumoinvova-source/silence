@@ -1,26 +1,17 @@
 [app]
-name: Build
-on: [push, pull_request]
 
-jobs:
-  # Build job. Builds app for Android with Buildozer
-  build-android:
-    name: Build for Android
-    runs-on: ubuntu-latest
+# (string) Название вашего приложения
+title = Build
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+# (string) Имя пакета
+package.name = buildapp
 
-      - name: Build with Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
-        id: buildozer
-        with:
-          workdir: test_app
-          buildozer_version: stable
+# (string) Домен пакета (например, org.test)
+package.domain = org.example
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: package
-          path: ${{ steps.buildozer.outputs.filename }}
+# (string) Путь к папке с исходным кодом (где лежит main.py)
+# Точка означает текущую директорию
+source.dir = .
+
+# (string) Версия приложения
+version = 0.1
