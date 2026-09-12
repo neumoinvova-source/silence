@@ -48,27 +48,22 @@ jobs:
           BUILDOZER_ALLOW_ROOT: '1'
           ANDROID_AUTO_ACCEPT_SDK_LICENSES: '1'
         run: |
-          # 1. Принудительное пре-согласие со всеми текущими и будущими лицензиями Google
+          # 1. Принудительное одобрение лицензий
           mkdir -p ~/.android && touch ~/.android/repositories.cfg
-          
-          # Одобряем стандартные лицензии через утилиту sdkmanager
           if [ -d "$ANDROID_HOME/cmdline-tools/latest/bin" ]; then
             yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
           elif [ -d "$ANDROID_HOME/tools/bin" ]; then
             yes | $ANDROID_HOME/tools/bin/sdkmanager --licenses || true
           fi
           
-          # 2. Модифицируем локальный buildozer.spec (если строка закомментирована — включаем её)
-          if [ -f buildozer.spec ]; then
-            sed -i 's/# android.accept_sdk_license = False/android.accept_sdk_license = True/g' buildozer.spec
-            sed -i 's/android.accept_sdk_license = False/android.accept_sdk_license = True/g' buildozer.spec
-          fi
+          # 2. Безопасное создание идеального buildozer.spec в одну строку без проблем с отступами
+          echo -e "[app]\ntitle = My Application\npackage.name = myapp\npackage.domain = org.test\nsource.dir = .\nversion = 0.1\nrequirements = python3,kivy\nandroid.accept_sdk_license = True" > buildozer.spec
           
-          # 3. Решаем проблему с поиском компилятора aidl внутри путей сборщика
+          # 3. Подкидываем aidl в пути сборки
           mkdir -p ~/.buildozer/android/platform/android-sdk/build-tools/34.0.0
           ln -sf /usr/bin/aidl ~/.buildozer/android/platform/android-sdk/build-tools/34.0.0/aidl
           
-          # 4. Запускаем чистую сборку
+          # 4. Запуск сборки
           buildozer android debug
 
       - name: Upload APK
