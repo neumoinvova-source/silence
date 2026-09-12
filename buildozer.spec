@@ -15,3 +15,6 @@ source.dir = .
 
 # (string) Версия приложения
 version = 0.1
+# (list) Application requirements
+# comma separated e.g. requirements = sqlite3,kivy
+requirements = python3,kivy
