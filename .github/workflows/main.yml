@@ -41,6 +41,15 @@ jobs:
         env:
           BUILDOZER_ALLOW_ROOT: '1'
         run: |
+          # Автоматическое принятие лицензий Android SDK
+          mkdir -p ~/.android && touch ~/.android/repositories.cfg
+          if [ -d "$ANDROID_HOME/cmdline-tools/latest/bin" ]; then
+            yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          elif [ -d "$ANDROID_HOME/tools/bin" ]; then
+            yes | $ANDROID_HOME/tools/bin/sdkmanager --licenses || true
+          fi
+          
+          # Генерация чистого конфигурационного файла buildozer.spec
           cat << 'EOF' > buildozer.spec
           [app]
           title = My Application
@@ -50,6 +59,8 @@ jobs:
           version = 0.1
           requirements = python3,kivy
           EOF
+          
+          # Запуск сборки
           buildozer android debug
 
       - name: Upload APK
