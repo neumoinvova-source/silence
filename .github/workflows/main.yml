@@ -59,7 +59,12 @@ jobs:
           # 2. Безопасное создание идеального buildozer.spec в одну строку без проблем с отступами
           echo -e "[app]\ntitle = My Application\npackage.name = myapp\npackage.domain = org.test\nsource.dir = .\nversion = 0.1\nrequirements = python3,kivy\nandroid.accept_sdk_license = True" > buildozer.spec
           
-          # 3. Подкидываем aidl в пути сборки
+          # 3. Решаем проблему с путями sdkmanager и aidl для Buildozer
+          mkdir -p ~/.buildozer/android/platform/android-sdk/tools/bin
+          if [ -f "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
+            ln -sf "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
+          fi
+          
           mkdir -p ~/.buildozer/android/platform/android-sdk/build-tools/34.0.0
           ln -sf /usr/bin/aidl ~/.buildozer/android/platform/android-sdk/build-tools/34.0.0/aidl
           
