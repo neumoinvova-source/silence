@@ -41,6 +41,15 @@ jobs:
         env:
           BUILDOZER_ALLOW_ROOT: '1'
         run: |
+          cat << 'EOF' > buildozer.spec
+          [app]
+          title = My Application
+          package.name = myapp
+          package.domain = org.test
+          source.dir = .
+          version = 0.1
+          requirements = python3,kivy
+          EOF
           buildozer android debug
 
       - name: Upload APK
