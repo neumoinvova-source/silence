@@ -23,7 +23,7 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install dependencies
+      - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -32,7 +32,9 @@ jobs:
             git \
             unzip \
             zip \
-            openjdk-17-jdk
+            openjdk-17-jdk \
+            libstdc++6 \
+            aidl
 
           python -m pip install --upgrade pip
           python -m pip install buildozer cython==0.29.36 virtualenv
@@ -41,26 +43,16 @@ jobs:
         env:
           BUILDOZER_ALLOW_ROOT: '1'
         run: |
-          # Автоматическое принятие лицензий Android SDK
+          # Принудительно соглашаемся со всеми лицензиями Android SDK перед сборкой
           mkdir -p ~/.android && touch ~/.android/repositories.cfg
-          if [ -d "$ANDROID_HOME/cmdline-tools/latest/bin" ]; then
-            yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
-          elif [ -d "$ANDROID_HOME/tools/bin" ]; then
-            yes | $ANDROID_HOME/tools/bin/sdkmanager --licenses || true
-          fi
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          yes | $ANDROID_HOME/tools/bin/sdkmanager --licenses || true
           
-          # Генерация чистого конфигурационного файла buildozer.spec
-          cat << 'EOF' > buildozer.spec
-          [app]
-          title = My Application
-          package.name = myapp
-          package.domain = org.test
-          source.dir = .
-          version = 0.1
-          requirements = python3,kivy
-          EOF
+          # Создаем пути для Android SDK заранее и подкидываем системный aidl, чтобы Buildozer его точно нашел
+          mkdir -p ~/.buildozer/android/platform/android-sdk/build-tools/34.0.0
+          ln -sf /usr/bin/aidl ~/.buildozer/android/platform/android-sdk/build-tools/34.0.0/aidl
           
-          # Запуск сборки
+          # Запуск сборки Buildozer
           buildozer android debug
 
       - name: Upload APK
